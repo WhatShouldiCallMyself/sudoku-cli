@@ -13,26 +13,25 @@
 #define CHOOSE_MSG1 "Please pick a row (1-9)\n"
 #define CHOOSE_MSG2 "Please pick a column (1-9).\n"
 #define CHOOSE_MSG3 "Please pick a number to put in (1-9, 0 to re-choose row and column).\n"
+#define ERR_SPOT_TAKEN "Chosen spot already has a number (%hu)! Please choose again.\n"
 #define ERR_OUT_OF_RANGE "Chosen number is out of range!\nPlease pick again.\n"
 #define ERR_BAD_CHOICE "Invalid number! Either the row already has the number, the column already has the number, or the subgrid already has the number. Please try again.\n"
-#define BOARD_FORMAT " %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n-----------------------------------\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n-----------------------------------\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n===================================\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n-----------------------------------\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n-----------------------------------\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n===================================\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n-----------------------------------\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n-----------------------------------\n %d | %d | %d ‖ %d | %d | %d ‖ %d | %d | %d \n"
+#define BOARD_FORMAT " %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n===================================\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n===================================\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n"
 
-//        row column
-//          V  V
-short board[9][9] = {
+//                 row column
+//                   V  V
+unsigned short board[9][9] = {
 	{0, 0, 0,0, 0, 0,0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
-char is_valid_choice(short* row, short* col, short* val) {
-	const short real_row = *row - 1;
-	const short real_col = *col - 1;
-	const short subgrid_row = (real_row / 3) * 3;
-    const short subgrid_col = (real_col / 3) * 3;
+char is_valid_choice(unsigned short* row, unsigned short* col, unsigned short* val) {
+	const unsigned short subgrid_row = (*row / 3) * 3;
+    const unsigned short subgrid_col = (*col / 3) * 3;
 
-	for (short i = 0; i < 9; i++) {
-		if ( (board[i][real_col] == *val) || (board[real_row][i] == *val) ) // check full row & column
+	for (unsigned short i = 0; i < 9; i++) {
+		if ( (board[i][*col] == *val) || (board[*row][i] == *val) ) // check full row & column
 			return '0';
 		
 		if ( board[subgrid_row + (i / 3)][subgrid_col + (i % 3)] == *val ) // check 3x3 subgrid
@@ -68,16 +67,17 @@ void print_board() { // yandere sim ahh code 💀💀💀
 
 void init_board() {
 	srand(time(NULL));
-	for (short row = 0; row < 9; row++) {
-		if ( (rand() % 9) == 0 ) { continue; }
+	for (unsigned short row = 0; row < 9; row++) {
+		if ( (rand() % 3) == 0 ) { continue; }
 
-		for (short col = 0; col < 9; col++) {
+		for (unsigned short col = 0; col < 9; col++) {
 			if ( (rand() % 3) == 0 ) { continue; }
 
-			short num = (rand() % 9) + 1;
-			for (short i = 0; i < 9; i++) {
+			unsigned short num = (rand() % 9) + 1;
+			unsigned short i = 0;
+			while (i < 9) {
 				if (is_valid_choice(&row, &col, &num) == '1') { break; }
-				num++;
+				num++; i++;
 				if (num > 9) { num -= 9; }
 			}
 
@@ -86,7 +86,7 @@ void init_board() {
 	}
 }
 
-short get_num() {
+unsigned short get_num() {
 	#ifdef _WIN32
 	return (short)(getch() - 48);
 	#else
@@ -101,7 +101,7 @@ short get_num() {
 	const int result = getchar();
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
-	return (short)(result - 48);
+	return (unsigned short)(result - 48);
 	#endif
 }
 
@@ -112,21 +112,26 @@ int main(/* int argc, const char** argv */) {
 	while (is_board_complete() != 1) {
 		print_board();
 		printf(CHOOSE_MSG1);
-		short row = get_num();
-		while ( (row < 1) || (row > 9) ) {
+		unsigned short row = get_num() - 1;
+		while (row > 8) {
 			printf(ERR_OUT_OF_RANGE);
-			row = get_num();
+			row = get_num() - 1;
 		}
 
 		printf(CHOOSE_MSG2);
-		short col = get_num();
-		while ( (col < 1) || (col > 9) ) {
+		unsigned short col = get_num() - 1;
+		while (col > 8) {
 			printf(ERR_OUT_OF_RANGE);
-			col = get_num();
+			col = get_num() - 1;
+		}
+
+		if (board[row][col] != 0) {
+			printf(ERR_SPOT_TAKEN, board[row][col]);
+			continue;
 		}
 
 		printf(CHOOSE_MSG3);
-		short val = get_num();
+		unsigned short val = get_num();
 		while ( (val < 1) || (val > 9) ) {
 			printf(ERR_OUT_OF_RANGE);
 			val = get_num();
@@ -139,7 +144,7 @@ int main(/* int argc, const char** argv */) {
 			val = get_num();
 			if (val == 0) { break; }
 		}
-		if (val > 0) { board[row-1][col-1] = val; }
+		if (val > 0) { board[row][col] = val; }
 	}
 	return 0;
 }
