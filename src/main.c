@@ -81,6 +81,7 @@ void init_board() {
 				if (num > 9) { num -= 9; }
 			}
 
+			if (i >= 8) { continue; }
 			board[row][col] = num;
 		}
 	}
