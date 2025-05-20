@@ -9,13 +9,13 @@
 #include <unistd.h>
 #endif
 
-#define INTRO_MSG "Welcome to a game of sudoku!\n"
-#define CHOOSE_MSG1 "Please pick a row (1-9)\n"
-#define CHOOSE_MSG2 "Please pick a column (1-9).\n"
-#define CHOOSE_MSG3 "Please pick a number to put in (1-9, 0 to re-choose row and column).\n"
+#define INTRO_MSG "Welcome to a game of sudoku!"
+#define CHOOSE_MSG1 "Please pick a row (1-9)"
+#define CHOOSE_MSG2 "Please pick a column (1-9)."
+#define CHOOSE_MSG3 "Please pick a number to put in (1-9, 0 to re-choose row and column)."
 #define ERR_SPOT_TAKEN "Chosen spot already has a number (%hu)! Please choose again.\n"
-#define ERR_OUT_OF_RANGE "Chosen number is out of range!\nPlease pick again.\n"
-#define ERR_BAD_CHOICE "Invalid number! Either the row already has the number, the column already has the number, or the subgrid already has the number. Please try again.\n"
+#define ERR_OUT_OF_RANGE "Chosen number is out of range!\nPlease pick again."
+#define ERR_BAD_CHOICE "Invalid number! Either the row already has the number, the column already has the number, or the subgrid already has the number. Please try again."
 #define BOARD_FORMAT " %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n===================================\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n===================================\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n"
 
 //                 row column
@@ -68,20 +68,16 @@ void print_board() { // yandere sim ahh code 💀💀💀
 void init_board() {
 	srand(time(NULL));
 	for (unsigned short row = 0; row < 9; row++) {
-		if ( (rand() % 3) == 0 ) { continue; }
-
 		for (unsigned short col = 0; col < 9; col++) {
-			if ( (rand() % 3) == 0 ) { continue; }
+			if ( (rand() % 3) != 0 ) { continue; }
 
 			unsigned short num = (rand() % 9) + 1;
-			unsigned short i = 0;
-			while (i < 9) {
+			for (unsigned short i = 0; i < 9; i++) {
 				if (is_valid_choice(&row, &col, &num) == '1') { break; }
-				num++; i++;
+				num++;
 				if (num > 9) { num -= 9; }
 			}
 
-			if (i >= 8) { continue; }
 			board[row][col] = num;
 		}
 	}
@@ -108,21 +104,22 @@ unsigned short get_num() {
 
 int main(/* int argc, const char** argv */) {
 	init_board();
-	printf(INTRO_MSG);
+	puts(INTRO_MSG);
 
 	while (is_board_complete() != 1) {
+		fwrite("\n", sizeof(char), 1, stdout);
 		print_board();
-		printf(CHOOSE_MSG1);
+		puts(CHOOSE_MSG1);
 		unsigned short row = get_num() - 1;
 		while (row > 8) {
-			printf(ERR_OUT_OF_RANGE);
+			puts(ERR_OUT_OF_RANGE);
 			row = get_num() - 1;
 		}
 
-		printf(CHOOSE_MSG2);
+		puts(CHOOSE_MSG2);
 		unsigned short col = get_num() - 1;
 		while (col > 8) {
-			printf(ERR_OUT_OF_RANGE);
+			puts(ERR_OUT_OF_RANGE);
 			col = get_num() - 1;
 		}
 
@@ -131,17 +128,17 @@ int main(/* int argc, const char** argv */) {
 			continue;
 		}
 
-		printf(CHOOSE_MSG3);
+		puts(CHOOSE_MSG3);
 		unsigned short val = get_num();
 		while ( (val < 1) || (val > 9) ) {
-			printf(ERR_OUT_OF_RANGE);
+			puts(ERR_OUT_OF_RANGE);
 			val = get_num();
 			if (val == 0) { break; }
 		}
 		if (val == 0) { continue; }
 
 		while (is_valid_choice(&row, &col, &val) != '1') {
-			printf(ERR_BAD_CHOICE);
+			puts(ERR_BAD_CHOICE);
 			val = get_num();
 			if (val == 0) { break; }
 		}
