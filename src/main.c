@@ -14,8 +14,8 @@
 #define CHOOSE_MSG2 "Please pick a column (1-9)."
 #define CHOOSE_MSG3 "Please pick a number to put in (1-9, 0 to re-choose row and column)."
 #define ERR_SPOT_TAKEN "Chosen spot already has a number (%hu)! Please choose again.\n"
-#define ERR_OUT_OF_RANGE "Chosen number is out of range!\nPlease pick again."
-#define ERR_BAD_CHOICE "Invalid number! Either the row already has the number, the column already has the number, or the subgrid already has the number. Please try again."
+#define ERR_OUT_OF_RANGE "Chosen number is out of range!\nPlease choose again."
+#define ERR_BAD_CHOICE "Invalid number! Either the row already has the number, the column already has the number, or the subgrid already has the number. Please choose again."
 #define BOARD_FORMAT " %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n===================================\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n===================================\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n-----------------------------------\n %hu | %hu | %hu ‖ %hu | %hu | %hu ‖ %hu | %hu | %hu \n"
 
 //                 row column
@@ -25,6 +25,29 @@ unsigned short board[9][9] = {
 	{0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
+
+
+
+unsigned short get_num() {
+	#ifdef _WIN32
+	return (short)(getch() - 48);
+	#else
+	struct termios oldt, newt;
+
+	tcgetattr(STDIN_FILENO, &oldt);
+	newt = oldt;
+
+	newt.c_lflag &= ~(ICANON | ECHO);
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+	const int result = getchar();
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+	return (unsigned short)(result - 48);
+	#endif
+}
+
+
 
 char is_valid_choice(unsigned short* row, unsigned short* col, unsigned short* val) {
 	const unsigned short subgrid_row = (*row / 3) * 3;
@@ -44,8 +67,7 @@ char is_valid_choice(unsigned short* row, unsigned short* col, unsigned short* v
 char is_board_complete() {
 	for (short i = 0; i < 9; i++) {
 		for (short j = 0; j < 9; j++) {
-			if (board[i][j] == 0)
-				return '0';
+			if (board[i][j] == 0) { return '0'; }
 		}
 	}
 
@@ -83,24 +105,7 @@ void init_board() {
 	}
 }
 
-unsigned short get_num() {
-	#ifdef _WIN32
-	return (short)(getch() - 48);
-	#else
-	struct termios oldt, newt;
 
-	tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-
-	newt.c_lflag &= ~(ICANON | ECHO);
-
-	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-	const int result = getchar();
-	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-
-	return (unsigned short)(result - 48);
-	#endif
-}
 
 int main(/* int argc, const char** argv */) {
 	init_board();
@@ -109,6 +114,8 @@ int main(/* int argc, const char** argv */) {
 	while (is_board_complete() != 1) {
 		fwrite("\n", sizeof(char), 1, stdout);
 		print_board();
+
+		// choose row
 		puts(CHOOSE_MSG1);
 		unsigned short row = get_num() - 1;
 		while (row > 8) {
@@ -116,6 +123,7 @@ int main(/* int argc, const char** argv */) {
 			row = get_num() - 1;
 		}
 
+		// choose column
 		puts(CHOOSE_MSG2);
 		unsigned short col = get_num() - 1;
 		while (col > 8) {
@@ -128,6 +136,7 @@ int main(/* int argc, const char** argv */) {
 			continue;
 		}
 
+		// choose number to put in slot
 		puts(CHOOSE_MSG3);
 		unsigned short val = get_num();
 		while ( (val < 1) || (val > 9) ) {
