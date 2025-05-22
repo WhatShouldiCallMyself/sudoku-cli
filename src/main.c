@@ -30,7 +30,7 @@ unsigned short board[9][9] = {
 
 unsigned short get_num() {
 	#ifdef _WIN32
-	return (short)(getch() - 48);
+	return (unsigned short)(getch() - 48);
 	#else
 	struct termios oldt, newt;
 
